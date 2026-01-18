@@ -26,6 +26,7 @@ connectDB();
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/ai', require('./routes/ai'));
 
 // --- Start Server ---
 const PORT = process.env.PORT || 5000;

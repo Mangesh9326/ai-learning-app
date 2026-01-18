@@ -5,48 +5,30 @@ import AIAssistant from './AIAssistant';
 const CoursePlayer = ({ course, onBack, onUpdateProgress }) => {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [activeChapter, setActiveChapter] = useState(course.chapters[0]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar toggle
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // --- LOCKED STATE (PURCHASE WALL) ---
+  // --- LOCKED STATE ---
   if (!course.owned) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4 animate-fade-in">
-        <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 relative">
-          <button 
-            onClick={onBack} 
-            className="absolute top-4 left-4 z-10 bg-white/20 hover:bg-white/40 backdrop-blur p-2 rounded-full text-white transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          
-          <div className="h-48 bg-gray-900 relative">
-             <img src={course.image} className="w-full h-full object-cover opacity-40" alt="" />
-             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="bg-white/10 backdrop-blur-md p-4 rounded-full">
-                 <Lock className="w-12 h-12 text-white" />
-               </div>
+      <div className="min-h-[85vh] flex items-center justify-center p-6 animate-fade-in bg-gray-50/50">
+        <div className="max-w-3xl w-full bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-gray-100">
+          <div className="h-64 bg-gray-900 relative overflow-hidden">
+             <img src={course.image} className="w-full h-full object-cover opacity-60 scale-105" alt="" />
+             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 to-transparent"></div>
+             <button onClick={onBack} className="absolute top-6 left-6 bg-white/10 hover:bg-white/20 backdrop-blur-md p-3 rounded-full text-white transition-all">
+               <ArrowLeft className="w-6 h-6" />
+             </button>
+             <div className="absolute bottom-8 left-8 text-white">
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">{course.title}</h1>
+                <p className="opacity-90 flex items-center gap-2"><Lock className="w-4 h-4" /> Locked Content</p>
              </div>
           </div>
           
-          <div className="p-8 md:p-12 text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Unlock Full Access</h2>
-            <p className="text-gray-500 mb-8 text-lg">
-              Enroll in <strong>{course.title}</strong> to access all {course.totalLessons} lessons, 
-              downloadable resources, and your certificate.
+          <div className="p-10 md:p-14 text-center">
+            <p className="text-gray-600 mb-10 text-xl leading-relaxed max-w-2xl mx-auto">
+              Ready to master this skill? Enroll now to get full access to <span className="font-bold text-gray-900">{course.totalLessons} premium lessons</span>, project files, and community support.
             </p>
-            
-            <div className="bg-indigo-50 p-6 rounded-xl mb-8 text-left border border-indigo-100">
-              <h4 className="font-bold text-indigo-900 mb-3 text-sm uppercase tracking-wide">Course Includes:</h4>
-              <div className="grid grid-cols-2 gap-3">
-                {['24 Video Lessons', 'Certificate', 'Source Code', 'AI Tutor Access'].map((item, i) => (
-                  <div key={i} className="flex items-center text-indigo-700 text-sm">
-                    <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" /> {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold text-lg hover:bg-indigo-600 transition-all shadow-xl hover:shadow-indigo-500/20 transform hover:-translate-y-1 flex items-center justify-center gap-2">
+            <button className="w-full md:w-auto px-12 py-5 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-500/30 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-3 mx-auto">
               Unlock for {course.price} <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -55,74 +37,97 @@ const CoursePlayer = ({ course, onBack, onUpdateProgress }) => {
     );
   }
 
-  // --- ACTIVE LEARNING STATE ---
+  // --- LEARNING INTERFACE ---
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] animate-fade-in bg-white">
+    <div className="flex flex-col h-[calc(100vh-64px)] bg-white animate-fade-in">
       {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0 shadow-sm z-20">
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0 z-20 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2.5 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors border border-transparent hover:border-gray-200">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h2 className="font-bold text-gray-900 truncate max-w-[200px] md:max-w-md text-sm md:text-base">
-            {course.title}
-          </h2>
+          <div>
+            <h2 className="font-bold text-gray-900 text-lg leading-tight truncate max-w-[150px] md:max-w-md">{course.title}</h2>
+            <p className="text-xs text-gray-500 hidden md:block">Chapter {course.chapters.indexOf(activeChapter) + 1} of {course.totalLessons}</p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-           <div className="hidden md:flex items-center gap-2 text-sm bg-gray-100 px-3 py-1.5 rounded-full">
-              <Award className="w-4 h-4 text-orange-500" /> 
-              <span className="text-gray-600 font-medium">{course.progress}% Completed</span>
+        <div className="flex items-center gap-4">
+           <div className="hidden lg:flex items-center gap-2 text-sm bg-orange-50 text-orange-700 px-4 py-2 rounded-full border border-orange-100">
+              <Award className="w-4 h-4" /> 
+              <span className="font-bold">{course.progress}%</span>
            </div>
            <button 
-             onClick={() => setIsAiOpen(!isAiOpen)}
-             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-               isAiOpen 
-                ? 'bg-indigo-600 text-white shadow-indigo-500/30 shadow-lg' 
-                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-             }`}
+             onClick={() => setIsAiOpen(true)}
+             className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:shadow-lg hover:shadow-indigo-500/20 transition-all active:scale-95"
            >
              <Sparkles className="w-4 h-4" /> 
              <span className="hidden sm:inline">AI Tutor</span>
            </button>
-           {/* Mobile Sidebar Toggle */}
            <button 
-             className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+             className="lg:hidden p-2.5 text-gray-600 hover:bg-gray-100 rounded-xl"
              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
            >
-             <Menu className="w-5 h-5" />
+             <Menu className="w-6 h-6" />
            </button>
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Main Content (Video) */}
-        <div className="flex-1 bg-gray-50 overflow-y-auto p-4 md:p-8 w-full">
+        {/* Main Content Area */}
+        <div className="flex-1 bg-gray-50 overflow-y-auto p-4 md:p-8 lg:p-10 w-full scroll-smooth">
            <div className="max-w-5xl mx-auto">
-              {/* Video Player Placeholder */}
-              <div className="aspect-video bg-black rounded-2xl shadow-2xl flex items-center justify-center mb-6 relative group overflow-hidden border-4 border-white">
-                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
-                 <button className="relative z-10 w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform border border-white/30">
-                    <Play className="w-8 h-8 text-white fill-current ml-1" />
+              {/* Video Player */}
+              <div className="aspect-video bg-black rounded-3xl shadow-2xl flex items-center justify-center mb-8 relative group overflow-hidden border border-gray-800">
+                 <img src={course.image} className="absolute inset-0 w-full h-full object-cover opacity-50" alt="" />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+                 
+                 <button className="relative z-10 w-24 h-24 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform border border-white/20 hover:bg-white/20">
+                    <Play className="w-10 h-10 text-white fill-current ml-2" />
                  </button>
-                 <div className="absolute bottom-6 left-6 right-6 text-white">
-                    <span className="bg-indigo-600 px-2 py-1 rounded text-xs font-bold uppercase tracking-wider mb-2 inline-block">Now Playing</span>
-                    <h3 className="text-xl md:text-2xl font-bold">{activeChapter.title}</h3>
+                 
+                 <div className="absolute bottom-0 left-0 w-full p-8 text-white">
+                    <div className="flex items-center gap-3 mb-2">
+                       <span className="bg-indigo-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">Lesson {course.chapters.indexOf(activeChapter) + 1}</span>
+                       <span className="text-gray-300 text-sm font-medium">{activeChapter.duration}</span>
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold">{activeChapter.title}</h3>
                  </div>
               </div>
 
-              {/* Lesson Details */}
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-1 bg-white rounded-2xl p-6 md:p-8 border border-gray-200 shadow-sm">
-                   <h1 className="text-2xl font-bold text-gray-900 mb-4">Lesson Overview</h1>
-                   <p className="text-gray-600 leading-relaxed mb-6">
-                     This lesson covers the core concepts of {activeChapter.title}. We will dive deep into practical examples and real-world scenarios.
+              {/* Lesson Controls & Description */}
+              <div className="flex flex-col lg:flex-row gap-8 items-start">
+                <div className="flex-1 bg-white rounded-3xl p-8 border border-gray-200 shadow-sm">
+                   <div className="flex justify-between items-start mb-6">
+                      <h1 className="text-2xl font-bold text-gray-900">About this lesson</h1>
+                      <button 
+                        onClick={() => onUpdateProgress(course._id, activeChapter._id)}
+                        disabled={activeChapter.completed}
+                        className={`px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${
+                          activeChapter.completed 
+                            ? 'bg-green-100 text-green-700 cursor-default'
+                            : 'bg-gray-900 text-white hover:bg-indigo-600 shadow-lg hover:shadow-indigo-500/20'
+                        }`}
+                      >
+                        {activeChapter.completed ? (
+                          <><CheckCircle className="w-5 h-5" /> Completed</>
+                        ) : (
+                          <>Mark as Complete <ChevronRight className="w-4 h-4" /></>
+                        )}
+                      </button>
+                   </div>
+                   <p className="text-gray-600 leading-relaxed text-lg mb-8">
+                     In this comprehensive lesson, we will break down the core concepts of <strong>{activeChapter.title}</strong>. 
+                     By the end of this video, you will understand how to apply these techniques in real-world scenarios.
                    </p>
-                   <button 
-                     onClick={() => onUpdateProgress(course._id, activeChapter._id)}
-                     className="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition-colors shadow-lg hover:shadow-green-500/30 flex items-center gap-2"
-                   >
-                     <CheckCircle className="w-5 h-5" /> Mark as Complete
-                   </button>
+                   
+                   <div className="bg-indigo-50 rounded-2xl p-6 border border-indigo-100">
+                      <h4 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4" /> AI Tip
+                      </h4>
+                      <p className="text-indigo-800 text-sm">
+                        Stuck? Open the <strong>AI Tutor</strong> and ask for a summary or a mini-quiz to test your knowledge on this specific topic!
+                      </p>
+                   </div>
                 </div>
               </div>
            </div>
@@ -130,52 +135,68 @@ const CoursePlayer = ({ course, onBack, onUpdateProgress }) => {
 
         {/* Sidebar (Curriculum) */}
         <div className={`
-          absolute md:static inset-y-0 right-0 w-80 bg-white border-l border-gray-200 flex flex-col z-30 transform transition-transform duration-300 shadow-2xl md:shadow-none
-          ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
+          absolute lg:static inset-y-0 right-0 w-96 bg-white border-l border-gray-200 flex flex-col z-30 transform transition-transform duration-300 shadow-2xl lg:shadow-none
+          ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
         `}>
-           <div className="p-5 border-b border-gray-100 bg-gray-50">
-              <h3 className="font-bold text-gray-900 text-lg">Course Content</h3>
-              <p className="text-xs text-gray-500 mt-1">{course.completedLessons}/{course.totalLessons} Lessons Completed</p>
+           <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-gray-900 text-lg">Curriculum</h3>
+                <p className="text-xs text-gray-500 font-medium mt-1">{course.completedLessons} / {course.totalLessons} Completed</p>
+              </div>
+              <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-gray-500 hover:bg-gray-200 rounded-full">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
            </div>
-           <div className="overflow-y-auto flex-1 p-3 space-y-2">
-              {course.chapters?.map((chapter) => (
-                <div 
-                  key={chapter._id} 
-                  onClick={() => {
-                    setActiveChapter(chapter);
-                    setIsSidebarOpen(false); // Close sidebar on mobile select
-                  }}
-                  className={`p-4 rounded-xl cursor-pointer transition-all border ${
-                    activeChapter._id === chapter._id
-                      ? 'bg-indigo-50 border-indigo-200 shadow-sm' 
-                      : 'hover:bg-gray-50 border-transparent'
-                  }`}
-                >
-                   <div className="flex items-start gap-3">
-                      <div className={`mt-1 ${chapter.completed ? 'text-green-500' : 'text-gray-300'}`}>
-                         {chapter.completed ? <CheckCircle className="w-5 h-5" /> : <div className="w-5 h-5 rounded-full border-2 border-current"></div>}
-                      </div>
-                      <div>
-                         <p className={`text-sm font-semibold ${activeChapter._id === chapter._id ? 'text-indigo-700' : 'text-gray-700'}`}>
-                           {chapter.title}
-                         </p>
-                         <p className="text-xs text-gray-400 mt-1">{chapter.duration}</p>
-                      </div>
-                   </div>
-                </div>
-              ))}
+           
+           <div className="overflow-y-auto flex-1 p-4 space-y-3">
+              {course.chapters?.map((chapter, idx) => {
+                const isActive = activeChapter._id === chapter._id;
+                return (
+                  <div 
+                    key={chapter._id} 
+                    onClick={() => {
+                      setActiveChapter(chapter);
+                      if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                    }}
+                    className={`group p-4 rounded-2xl cursor-pointer transition-all border relative overflow-hidden ${
+                      isActive
+                        ? 'bg-white border-indigo-600 ring-1 ring-indigo-600 shadow-md' 
+                        : 'bg-white border-gray-100 hover:border-indigo-200 hover:bg-gray-50'
+                    }`}
+                  >
+                     {isActive && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-indigo-600"></div>}
+                     
+                     <div className="flex items-start gap-4">
+                        <div className={`mt-0.5 min-w-[24px] h-6 flex items-center justify-center rounded-full border-2 ${
+                          chapter.completed 
+                            ? 'bg-green-500 border-green-500 text-white' 
+                            : isActive ? 'border-indigo-600 text-indigo-600' : 'border-gray-300 text-transparent'
+                        }`}>
+                           {chapter.completed && <CheckCircle className="w-4 h-4 fill-current" />}
+                           {!chapter.completed && isActive && <div className="w-2 h-2 bg-current rounded-full"></div>}
+                        </div>
+                        
+                        <div className="flex-1">
+                           <p className={`text-sm font-bold mb-1 ${isActive ? 'text-indigo-900' : 'text-gray-700'}`}>
+                             {idx + 1}. {chapter.title}
+                           </p>
+                           <p className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                             <Play className="w-3 h-3" /> {chapter.duration}
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+                );
+              })}
            </div>
         </div>
 
-        {/* Mobile Sidebar Overlay */}
+        {/* Mobile Sidebar Overlay Backdrop */}
         {isSidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-20 md:hidden"
-            onClick={() => setIsSidebarOpen(false)}
-          ></div>
+          <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-20 lg:hidden" onClick={() => setIsSidebarOpen(false)}></div>
         )}
 
-        {/* AI Assistant Overlay */}
+        {/* AI Assistant */}
         <AIAssistant 
           isOpen={isAiOpen} 
           onClose={() => setIsAiOpen(false)} 
