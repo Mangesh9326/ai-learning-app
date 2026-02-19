@@ -1,110 +1,136 @@
-const express = require('express');
+const express = require("express");
+const courses = require("../data/courses.json");
 const router = express.Router();
-const auth = require('../middleware/auth'); // You need a middleware to verify JWT
-const Course = require('../models/Course');
-const User = require('../models/User');
+const auth = require("../middleware/auth");
+const Course = require("../models/Course");
+const User = require("../models/User");
 
 // @route   GET /api/dashboard
 // @desc    Get all courses with user's specific progress
-router.get('/', auth, async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
-    // 1. Get the User and populate their enrolled courses
-    const user = await User.findById(req.user.id).select('-password');
-    
-    // 2. Get ALL available courses from DB
-    const allCourses = await Course.find();
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
 
-    // 3. Merge Data: Check which courses the user owns
-    const dashboardData = allCourses.map(course => {
-      // Find if user has this course in their list
-      const userCourse = user.courses.find(c => c.courseId.toString() === course._id.toString());
+    // Filter only courses user owns
+    const enrolledCourses = courses.filter((course) =>
+      user.courses.some((c) => c.courseId === course.id),
+    );
 
-      if (userCourse) {
-        // USER OWNS THIS COURSE
-        return {
-          _id: course._id,
-          title: course.title,
-          image: course.image,
-          totalLessons: course.chapters.length,
-          price: course.price,
-          // User specific data:
-          owned: true,
-          progress: userCourse.progress,
-          completedLessons: userCourse.completedChapters.length,
-          lastAccessed: userCourse.lastAccessed,
-          chapters: course.chapters.map(chap => ({
-            _id: chap._id,
-            title: chap.title,
-            duration: chap.duration,
-            // Check if this specific chapter is completed
-            completed: userCourse.completedChapters.includes(chap._id.toString())
-          }))
-        };
-      } else {
-        // USER DOES NOT OWN THIS COURSE (Locked)
-        return {
-          _id: course._id,
-          title: course.title,
-          image: course.image,
-          price: course.price,
-          totalLessons: course.chapters.length,
-          owned: false,
-          progress: 0,
-          completedLessons: 0,
-          chapters: [] // Don't send content for unowned courses
-        };
-      }
+    // Build response
+    const dashboardData = enrolledCourses.map((course) => {
+      const userCourse = user.courses.find((c) => c.courseId === course.id);
+
+      return {
+        id: course.id,
+        title: course.title,
+        image: course.image,
+        owned: true,
+        totalLessons: course.content?.length || 0,
+        price: course.price,
+        progress: userCourse.progress || 0,
+        completedLessons: userCourse.completedChapters.length,
+        lastAccessed: userCourse.lastAccessed,
+        chapters: Array.isArray(course.content)
+          ? course.content.map((lesson, index) => ({
+              id: index.toString(),
+              title: lesson,
+              duration: "10 min",
+              completed: userCourse.completedChapters.includes(
+                index.toString(),
+              ),
+            }))
+          : [],
+      };
     });
 
     res.json(dashboardData);
-
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    console.error(err);
+    res.status(500).json({ msg: "Server Error" });
   }
 });
 
 // @route   POST /api/dashboard/enroll/:courseId
 // @desc    Simulate purchasing a course
-router.post('/enroll/:courseId', auth, async (req, res) => {
+router.post("/enroll/:courseId", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    const courseId = req.params.courseId;
+    const courseId = Number(req.params.courseId);
 
-    // Check if already enrolled
-    if (user.courses.some(c => c.courseId.toString() === courseId)) {
-      return res.status(400).json({ msg: 'Already enrolled' });
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    // 🔎 Check if course exists in JSON
+    const courseExists = courses.find((c) => c.id === courseId);
+    if (!courseExists) {
+      return res.status(404).json({ msg: "Course not found" });
     }
 
-    // Add to user's course list
+    // 🚫 Prevent duplicate enroll
+    const isEnrolled = user.courses.some((c) => c.courseId === courseId);
+    if (isEnrolled) {
+      return res.status(400).json({ msg: "Already enrolled" });
+    }
+
+    // ✅ Enroll
     user.courses.push({
-      courseId: courseId,
+      courseId,
       progress: 0,
-      completedChapters: []
+      completedChapters: [],
+      lastAccessed: Date.now(),
     });
 
     await user.save();
-    res.json(user.courses);
+
+    res.json({ msg: "Enrollment successful", courses: user.courses });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server Error", error: err.message });
+  }
+});
+
+router.get("/check/:courseId", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    const courseId = req.params.courseId;
+
+    // Check if course exists in user's list
+    const isEnrolled = user.courses.some(
+      (c) => c.courseId.toString() === courseId.toString(),
+    );
+
+    res.json({ enrolled: isEnrolled });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 });
 
 // @route   PUT /api/dashboard/progress
 // @desc    Mark a chapter as completed
-router.put('/progress', auth, async (req, res) => {
+router.put("/progress", auth, async (req, res) => {
   const { courseId, chapterId } = req.body;
+  const courses = require("../data/courses.json");
+  const course = courses.find((c) => c.id === Number(courseId));
 
   try {
     const user = await User.findById(req.user.id);
-    const course = await Course.findById(courseId);
+
+    if (!user || !course) {
+      return res.status(404).json({ msg: "User or Course not found" });
+    }
 
     // Find the course in user's profile
-    const userCourseIndex = user.courses.findIndex(c => c.courseId.toString() === courseId);
+    const userCourseIndex = user.courses.findIndex(
+      (c) => c.courseId === course.id,
+    );
 
     if (userCourseIndex === -1) {
-      return res.status(404).json({ msg: 'Course not found in user profile' });
+      return res.status(404).json({ msg: "Course not found in user profile" });
     }
 
     // Add chapter to completed list if not already there
@@ -114,18 +140,85 @@ router.put('/progress', auth, async (req, res) => {
     }
 
     // Recalculate Progress %
-    const totalChapters = course.chapters.length;
-    const completedCount = userCourse.completedChapters.length;
-    userCourse.progress = Math.round((completedCount / totalChapters) * 100);
+    const totalChapters = course.content?.length || 0;
+    // Prevent division by zero if course has no chapters
+    if (totalChapters > 0) {
+      const completedCount = userCourse.completedChapters.length;
+      userCourse.progress = Math.round((completedCount / totalChapters) * 100);
+    } else {
+      userCourse.progress = 100;
+    }
+
     userCourse.lastAccessed = Date.now();
 
     await user.save();
-    res.json({ progress: userCourse.progress, completedChapters: userCourse.completedChapters });
+    res.json({
+      progress: userCourse.progress,
+      completedChapters: userCourse.completedChapters,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route   GET /api/dashboard/:courseId
+// @desc    Get a single enrolled course and its progress
+// @route   GET /api/dashboard/:courseId
+// @desc    Get a single enrolled course and its progress
+router.get('/:courseId', auth, async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    const user = await User.findById(req.user.id);
+
+    if (!user) return res.status(404).json({ msg: 'User not found' });
+
+    // 1️⃣ Check if user enrolled
+    const userCourse = user.courses.find(
+      c => c.courseId.toString() === courseId.toString()
+    );
+
+    if (!userCourse) {
+      return res.status(403).json({ msg: 'You are not enrolled in this course' });
+    }
+
+    // 2️⃣ Get course from JSON (NOT Mongo)
+    const courseData = courses.find(
+      c => c.id.toString() === courseId.toString()
+    );
+
+    if (!courseData) {
+      return res.status(404).json({ msg: 'Course data not found' });
+    }
+
+    // 3️⃣ Convert content -> chapters (since your JSON uses content)
+    const chapters = Array.isArray(courseData.content)
+      ? courseData.content.map((lesson, index) => ({
+          id: index.toString(),
+          title: lesson,
+          duration: "10 min",
+          completed: userCourse.completedChapters.includes(index.toString())
+        }))
+      : [];
+
+    // 4️⃣ Merge progress
+    const mergedCourse = {
+      id: courseData.id,
+      title: courseData.title,
+      image: courseData.image,
+      totalLessons: chapters.length,
+      progress: userCourse.progress || 0,
+      completedLessons: userCourse.completedChapters.length,
+      chapters
+    };
+
+    res.json(mergedCourse);
 
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
+
 
 module.exports = router;

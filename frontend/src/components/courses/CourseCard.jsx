@@ -1,9 +1,25 @@
 import React, { memo } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. Import Hook
 import * as Icons from '../common/Icons';
 
 const CourseCard = ({ course }) => {
+  const navigate = useNavigate(); // 2. Initialize Hook
+
+  const handleCardClick = () => {
+    // 3. Navigate to the course details page
+    // Using course._id (MongoDB) or course.id depending on your data
+    const courseId = course._id || course.id; 
+    navigate(`/course/${courseId}`);
+    
+    // Note: If you genuinely want a new browser tab/window, use:
+    // window.open(`/course/${courseId}`, '_blank');
+  };
+
   return (
-    <div className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:border-indigo-200 transition-all duration-300 flex flex-col cursor-pointer transform hover:-translate-y-1">
+    <div 
+      onClick={handleCardClick} // 4. Add Click Handler
+      className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:border-indigo-200 transition-all duration-300 flex flex-col cursor-pointer transform hover:-translate-y-1"
+    >
       {/* Image */}
       <div className="relative aspect-video overflow-hidden">
         <img 
@@ -40,7 +56,7 @@ const CourseCard = ({ course }) => {
               />
             ))}
           </div>
-          <span className="text-xs text-gray-400">({course.reviews.toLocaleString()})</span>
+          <span className="text-xs text-gray-400">({course.reviews?.toLocaleString()})</span>
         </div>
 
         {/* Meta Tags */}
@@ -53,17 +69,15 @@ const CourseCard = ({ course }) => {
           </div>
         </div>
 
-        {/* Price */}
-        <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+        {/* <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold text-gray-900">₹{course.price}</span>
               <span className="text-sm text-gray-400 line-through">₹{course.originalPrice}</span>
             </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
 };
 
-// Memoizing prevents re-renders if props don't change
 export default memo(CourseCard);

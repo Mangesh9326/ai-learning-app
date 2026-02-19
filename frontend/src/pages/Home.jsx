@@ -14,8 +14,6 @@ const Home = () => {
     <div className="w-full bg-white font-sans text-gray-900 pb-20">
       
       <HomeHero />
-      <CategoryCards />
-      <PromoSection />
       <CourseTabs />
       <Certifications />
       <CareerPaths />

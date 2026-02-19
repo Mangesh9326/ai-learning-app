@@ -117,13 +117,13 @@ const CourseTabs = () => {
                       </div>
                       <span className="text-xs text-gray-400">({course.reviews?.toLocaleString()})</span>
                   </div>
-                  <div className="mt-auto flex items-center gap-2">
+                  {/* <div className="mt-auto flex items-center gap-2">
                     <span className="font-bold text-gray-900 text-lg">₹{course.price}</span>
                     <span className="text-gray-400 font-normal line-through text-sm">₹{course.originalPrice}</span>
                   </div>
                   {course.bestseller && (
                     <div className="mt-3 text-[10px] font-bold px-2 py-1 uppercase tracking-wide rounded w-fit bg-yellow-100 text-yellow-800">Bestseller</div>
-                  )}
+                  )} */}
                 </div>
               </div>
             ))}

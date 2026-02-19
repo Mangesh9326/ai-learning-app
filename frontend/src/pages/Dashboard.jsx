@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import DashboardGrid from '../components/dashboard/DashboardGrid';
 import CoursePlayer from '../components/dashboard/CoursePlayer';
 
 const Dashboard = () => {
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   // --- 1. Load User & Courses ---
   useEffect(() => {
@@ -15,7 +16,10 @@ const Dashboard = () => {
 
     const fetchDashboard = async () => {
       const token = localStorage.getItem('token');
-      if (!token) return; // Handle redirect if needed
+      if (!token) {
+        navigate('/login');
+        return; 
+      }
 
       try {
         const res = await fetch('http://localhost:5000/api/dashboard', {
@@ -31,27 +35,25 @@ const Dashboard = () => {
     };
 
     fetchDashboard();
-  }, []);
+  }, [navigate]);
 
-  // --- 2. Update Progress (When user clicks 'Mark Complete') ---
+  // --- 2. Update Progress (Prop drilled to CoursePlayer) ---
   const handleUpdateProgress = async (courseId, chapterId) => {
     const token = localStorage.getItem('token');
     
-    // Optimistic UI Update (Update state immediately for speed)
+    // Optimistic UI Update for the main courses array
     const updatedCourses = courses.map(c => {
-      if (c._id === courseId) {
-        const updatedChapters = c.chapters.map(chap => 
-          chap._id === chapterId ? { ...chap, completed: true } : chap
-        );
-        // Recalculate basic progress for UI
-        const completedCount = updatedChapters.filter(ch => ch.completed).length;
-        const newProgress = Math.round((completedCount / c.totalLessons) * 100);
+      if ((c.id || c._id) === courseId) {
+        // If chapters exist in the grid preview, update them
+        const updatedChapters = c.chapters ? c.chapters.map(chap => 
+          (chap._id || chap.id) === chapterId ? { ...chap, completed: true } : chap
+        ) : [];
         
-        // Update selected course view immediately too
-        if (selectedCourse && selectedCourse._id === courseId) {
-           setSelectedCourse({ ...c, chapters: updatedChapters, progress: newProgress, completedLessons: completedCount });
-        }
-
+        const completedCount = updatedChapters.filter(ch => ch.completed).length;
+        // Prevent division by zero if totalLessons is missing
+        const total = c.totalLessons || updatedChapters.length || 1; 
+        const newProgress = Math.round((completedCount / total) * 100);
+        
         return { ...c, chapters: updatedChapters, progress: newProgress, completedLessons: completedCount };
       }
       return c;
@@ -70,7 +72,6 @@ const Dashboard = () => {
       });
     } catch (err) {
       console.error("Failed to save progress", err);
-      // Revert state if error (optional)
     }
   };
 
@@ -83,20 +84,27 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white pt-16">
-      {selectedCourse ? (
-        <CoursePlayer 
-          course={selectedCourse} 
-          onBack={() => setSelectedCourse(null)}
-          onUpdateProgress={handleUpdateProgress}
+    <div className="min-h-screen bg-white">
+      
+      {/* Set up nested routes inside the Dashboard */}
+      <Routes>
+        {/* Route: /dashboard (Shows the Grid) */}
+        <Route 
+          path="/" 
+          element={<DashboardGrid courses={courses} user={user} />} 
         />
-      ) : (
-        <DashboardGrid 
-          courses={courses} 
-          user={user}
-          onSelectCourse={setSelectedCourse} 
+        
+        {/* Route: /dashboard/:courseId (Shows the Player) */}
+        <Route 
+          path="/:courseId" 
+          element={
+            <CoursePlayerWrapper 
+              courses={courses} 
+              onUpdateProgress={handleUpdateProgress} 
+            />
+          } 
         />
-      )}
+      </Routes>
 
       {/* Global Animation Styles */}
       <style>{`
@@ -117,6 +125,25 @@ const Dashboard = () => {
         .animate-scale-in { animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
       `}</style>
     </div>
+  );
+};
+
+// --- Helper Component to extract URL params and find the course ---
+const CoursePlayerWrapper = ({ courses, onUpdateProgress }) => {
+  const { courseId } = useParams();
+  const navigate = useNavigate();
+  
+  // Find the specific course from the state based on the URL parameter
+  const course = courses.find(c => (c._id || c.id).toString() === courseId);
+
+  if (!course) return <div className="p-10 text-center">Course not found or loading...</div>;
+
+  return (
+    <CoursePlayer 
+      course={course} 
+      onBack={() => navigate('/dashboard')} // Go back to grid
+      onUpdateProgress={onUpdateProgress}
+    />
   );
 };
 

@@ -8,6 +8,8 @@
   color-scheme: light dark;
   color: #242424;
   background-color: rgba(255, 255, 255, 0.87);
+    /* color: #ffffff; */
+    /* background-color: #213547; */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -27,4 +29,27 @@ body {
     color: #ffffff;
     background-color: #213547;
   }
+}
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob {
+  animation: blob 7s infinite;
+}
+.animation-delay-200 {
+  animation-delay: 2s;
+}
+.animation-delay-500 {
+  animation-delay: 5s;
+}
+.animate-bounce-slow {
+  animation: bounce 3s infinite ease-in-out;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(-5%); }
+  50% { transform: translateY(0); }
 }
