@@ -37,7 +37,7 @@ router.get("/", auth, async (req, res) => {
           ? course.content.map((lesson, index) => ({
               id: index.toString(),
               title: lesson,
-              duration: "10 min",
+              duration: `${Math.floor(Math.random() * 60) + 10} mins`,
               completed: userCourse.completedChapters.includes(
                 index.toString(),
               ),
@@ -196,7 +196,7 @@ router.get('/:courseId', auth, async (req, res) => {
       ? courseData.content.map((lesson, index) => ({
           id: index.toString(),
           title: lesson,
-          duration: "10 min",
+          duration: `${Math.floor(Math.random() * 60) + 10} mins`,
           completed: userCourse.completedChapters.includes(index.toString())
         }))
       : [];

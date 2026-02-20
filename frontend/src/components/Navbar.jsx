@@ -81,11 +81,11 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    ...(user ? [{ name: "Dashboard", href: "/dashboard" }] : []),
-    { name: "Home", href: "/" },
-    { name: "Courses", href: "/courses" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
+    { name: "Home", href: "/" },
+    { name: "Courses", href: "/courses" },
+    { name: "About", href: "/about" },
+    { name: "Contact", href: "/contact" },
+        ...(user ? [{ name: "Dashboard", href: "/dashboard" }] : []),
   ];
 
   return (
@@ -217,7 +217,7 @@ const Navbar = () => {
                       <p className="text-sm font-semibold text-gray-700">
                         {user.name}
                       </p>
-                      <p className="text-xs text-gray-500 truncate max-w-[150px]">
+                      <p className="text-xs text-gray-500 truncate max-w-37.5">
                         {user.email}
                       </p>
                     </div>
@@ -257,7 +257,7 @@ const Navbar = () => {
 
         {/* --- MOBILE SEARCH OVERLAY (Full Screen) --- */}
         {isSearchActive && (
-          <div className="fixed inset-0 bg-white z-[60] md:hidden animate-in fade-in duration-200">
+          <div className="fixed inset-0 bg-white z-60 md:hidden animate-in fade-in duration-200">
             {/* --- Header Section --- */}
             <div className="flex items-center gap-3 p-4 border-b border-gray-100 bg-white shadow-sm sticky top-0 z-10">
               <div className="relative flex-1 group">
@@ -333,7 +333,7 @@ const Navbar = () => {
                             {course.rating}
                           </span>
                           <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                          <span className="truncate max-w-[100px]">
+                          <span className="truncate max-w-25">
                             {course.instructor}
                           </span>
                         </div>

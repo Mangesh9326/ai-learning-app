@@ -1,23 +1,18 @@
 import React, { memo } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Import Hook
+import { useNavigate } from 'react-router-dom';
 import * as Icons from '../common/Icons';
 
 const CourseCard = ({ course }) => {
-  const navigate = useNavigate(); // 2. Initialize Hook
+  const navigate = useNavigate();
 
   const handleCardClick = () => {
-    // 3. Navigate to the course details page
-    // Using course._id (MongoDB) or course.id depending on your data
     const courseId = course._id || course.id; 
     navigate(`/course/${courseId}`);
-    
-    // Note: If you genuinely want a new browser tab/window, use:
-    // window.open(`/course/${courseId}`, '_blank');
   };
 
   return (
     <div 
-      onClick={handleCardClick} // 4. Add Click Handler
+      onClick={handleCardClick}
       className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:border-indigo-200 transition-all duration-300 flex flex-col cursor-pointer transform hover:-translate-y-1"
     >
       {/* Image */}
@@ -28,11 +23,11 @@ const CourseCard = ({ course }) => {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
           loading="lazy" 
         />
-        {course.bestseller && (
+        {/* {course.bestseller && (
           <div className="absolute top-3 left-3 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-1 rounded shadow-sm">
             BESTSELLER
           </div>
-        )}
+        )} */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
       </div>
 

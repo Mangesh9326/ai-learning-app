@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 // --- Components ---
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
 
 // --- Pages ---
 import Home from "./pages/Home";
@@ -14,10 +15,13 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
 import Dashboard from "./pages/Dashboard";
-import CourseDetail from './pages/CourseDetail'
-import CoursePlayer from "./components/dashboard/CoursePlayer";
+import CourseDetail from "./pages/CourseDetail";
 
-const Profile = () => <div className="pt-24 px-8 text-center"><h1 className="text-3xl font-bold">User Profile</h1></div>;
+const Profile = () => (
+  <div className="pt-24 px-8 text-center">
+    <h1 className="text-3xl font-bold">User Profile</h1>
+  </div>
+);
 
 // --- Main Layout Component ---
 const MainLayout = () => {
@@ -25,7 +29,7 @@ const MainLayout = () => {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <main className="flex-1 pt-16">
-        <Outlet /> 
+        <Outlet />
       </main>
       <Footer />
     </div>
@@ -35,6 +39,7 @@ const MainLayout = () => {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />

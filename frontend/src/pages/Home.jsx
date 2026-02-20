@@ -2,12 +2,11 @@ import React from 'react';
 
 // Components
 import HomeHero from '../components/home/HomeHero';
-import CategoryCards from '../components/home/CategoryCards';
-import PromoSection from '../components/home/PromoSection';
 import CourseTabs from '../components/home/CourseTabs';
 import Certifications from '../components/home/Certifications';
 import CareerPaths from '../components/home/CareerPaths';
 import BusinessPlans from '../components/home/BusinessPlans';
+import HomeFeature from '../components/home/HomeFeatures';
 
 const Home = () => {
   return (
@@ -15,6 +14,7 @@ const Home = () => {
       
       <HomeHero />
       <CourseTabs />
+      <HomeFeature />
       <Certifications />
       <CareerPaths />
       <BusinessPlans />
